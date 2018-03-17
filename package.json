@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/ThomasDenneulin/caradisiac#readme",
   "dependencies": {
+    "create-react-app": "^1.5.2",
     "elasticsearch": "^14.2.0",
     "express": "^4.16.3",
     "node-car-api": "git+https://github.com/92bondstreet/node-car-api.git"
