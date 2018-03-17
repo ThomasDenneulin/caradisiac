@@ -1,0 +1,28 @@
+{
+  "name": "caradisiac",
+  "version": "1.0.0",
+  "description": "Build an api that get the list of SUV with the higher rate and the higher volume (car boot)",
+  "main": "App.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node App.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ThomasDenneulin/caradisiac.git"
+  },
+  "author": "Thomas Denneulin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ThomasDenneulin/caradisiac/issues"
+  },
+  "homepage": "https://github.com/ThomasDenneulin/caradisiac#readme",
+  "dependencies": {
+    "elasticsearch": "^14.2.0",
+    "express": "^4.16.3",
+    "node-car-api": "git+https://github.com/92bondstreet/node-car-api.git"
+  }
+}
