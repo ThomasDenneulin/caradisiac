@@ -4,6 +4,7 @@ var express = require('express');
 var client = require('./connection.js');
 const { getBrands } = require('node-car-api');
 const { getModels } = require('node-car-api');
+const pSettle = require('p-settle');
 // Nous définissons ici les paramètres du serveur.
 var hostname = 'localhost';
 var port = 9292;
@@ -11,29 +12,22 @@ var port = 9292;
 var app = express();
 var router = express.Router();  // get an instance of the express Router
 
-async function Brands() {
-    const brands = await getBrands();
-
-    return brands;
-}
-
-async function Models(brand) {
-    const models = await getModels(brand);
-
-    return models;
-}
-
-function getModel(brand) {
-    return new Promise((resolve, reject) => {
-        Models(brand)
-            .then(models => { return resolve(models) })
-            .catch(err => { return reject(err) })
+function Brands() {
+    return new Promise((resolve,reject)=>{
+        getBrands()
+        .then((brands)=>{
+            return resolve(brands);
+        })
+        .catch((err)=>{return resolve("ERR")})
     })
 }
 
-function InitMapping() {
-    var body = { car: { properties: { "volume": { "type": "text", "fielddata": true } } } }
-    return client.indices.putMapping({ index: "cars", type: "car", body: body })
+function Models(brand) {
+    return new Promise((resolve,reject)=>{
+        getModels(brand)
+        .then((models)=>{resolve(models)})
+        .catch((err) => {resolve("ERR")})
+    })
 }
 
 /**
@@ -41,16 +35,20 @@ function InitMapping() {
  */
 app.route("/populate") //Instancie la route
     .get(function (req, res) { //Pour un get
-        Brands()
-            .then(brands => {
-                const requests = brands.map(brand => getModel(brand))
+        //Brands()
+            //.then(brands => {
+                var brandd = ["PEUGEOT","DACIA"];
+                const requests = brandd.map(brand => Models(brand))
                 Promise.all(requests)
                     .then(results => {
+                        console.log(results[0])
                         var models = [].concat.apply([], results)
                         var bulk_body = [];
                         models.forEach(model => {
-                            bulk_body.push({ index: { _index: 'cars', _type: 'car', _id: model.uuid } })
-                            bulk_body.push(model)
+                            if (model != "ERR") {
+                                bulk_body.push({ index: { _index: 'cars', _type: 'car', _id: model.uuid } })
+                                bulk_body.push(model)
+                            }
                         });
                         console.log(bulk_body);
                         client.bulk({
@@ -72,13 +70,19 @@ app.route("/populate") //Instancie la route
                                 }).then((result) => {
                                     res.send(resp);
                                 })
-                                    .catch((err) => { console.log(err) })
+                                    .catch((err) => {
+                                        console.log(err)
+                                        res.send(err)
+                                    })
 
                             }
                         })
                     })
-                    .catch(err => console.log(err))
-            })
+                    .catch(err => {
+                        console.log("Error in promise all")
+                        console.log(err)
+                    })
+           // .catch((err) => { console.log("Error in Brands") })
     })
 
 
@@ -93,10 +97,10 @@ app.route("/suv")
         }
 
         client.search({
-            index : "cars",
-            type : "car",
-            body : query
-        },(err,resp)=>{
+            index: "cars",
+            type: "car",
+            body: query
+        }, (err, resp) => {
             res.send(resp)
         });
     })
